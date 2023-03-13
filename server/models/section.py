@@ -1,12 +1,6 @@
-from json import dumps
+from  pydantic import BaseModel
 
-class Section:
-    def __init__(self, title: str, content: str):
-        self.title = title
-        self.content = content
-        
-    def toDict(self) -> dict:
-        return {
-            "title": self.title,
-            "content": self.content
-        }
+class UserSection(BaseModel):
+    title: str
+    content: str
+    
