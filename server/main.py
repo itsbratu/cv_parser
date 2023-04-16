@@ -1,15 +1,17 @@
+import os
 import pydantic
-from random import randrange
+
 from bson import ObjectId
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from constants import *
-from models.user_data import UserData, convert_user_data_to_dict
-from db.db import *
+from models.user_data import GenericUserFormData
 from pymongo import MongoClient
-from models.job import UserJob
-from models.study import UserStudy
-from models.section import UserSection
+
+MONGODB_URL = os.environ['DB_URL']
+MONGODB_DATABASE_NAME = os.environ['MONGODB_DATABASE_NAME']
+MONGODB_RESUMES_TABLE = os.environ['MONGODB_RESUMES_TABLE']
+USER_UPLOADS_BASE_URL = '/api-useruploads'
 
 pydantic.json.ENCODERS_BY_TYPE[ObjectId]=str
 dbClient = MongoClient(MONGODB_URL)
@@ -30,11 +32,13 @@ async def upload_file(resume: UploadFile = File(...)):
     return resume.filename
 
 @app.post(USER_UPLOADS_BASE_URL + '/submit-data')
-def submit_data(data: UserData):
-    uploaded_resume_data = db[MONGODB_RESUMES_TABLE].insert_one(convert_user_data_to_dict(data))
+def submit_data(data: GenericUserFormData):
+    print(data)
+    uploaded_resume_data = db[MONGODB_RESUMES_TABLE].insert_one(data)
     return db[MONGODB_RESUMES_TABLE].find_one({"_id": uploaded_resume_data.inserted_id})
 
 @app.get(USER_UPLOADS_BASE_URL + '/parsed-user-data')
 async def get_parsed_user_data():
     currentResumes = [currentEntry for currentEntry in db[MONGODB_RESUMES_TABLE].find()]
+    del currentResumes[0]["_id"]
     return currentResumes[0]
