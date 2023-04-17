@@ -2,11 +2,12 @@ import os
 import pydantic
 
 from bson import ObjectId
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Request
 from fastapi.middleware.cors import CORSMiddleware
 from constants import *
 from models.user_data import GenericUserFormData
 from pymongo import MongoClient
+from linkedin_api import Linkedin
 
 MONGODB_URL = os.environ['DB_URL']
 MONGODB_DATABASE_NAME = os.environ['MONGODB_DATABASE_NAME']
@@ -18,6 +19,8 @@ dbClient = MongoClient(MONGODB_URL)
 db = dbClient[MONGODB_DATABASE_NAME]
 app = FastAPI()
 
+linkedIn = Linkedin(os.environ['LINKEDIN_EMAIL'], os.environ['LINKEDIN_PASSWORD'])
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -28,17 +31,22 @@ app.add_middleware(
 
 @app.post(USER_UPLOADS_BASE_URL + '/upload')
 async def upload_file(resume: UploadFile = File(...)):
-    print(resume.filename)
     return resume.filename
 
 @app.post(USER_UPLOADS_BASE_URL + '/submit-data')
 def submit_data(data: GenericUserFormData):
-    print(data)
     uploaded_resume_data = db[MONGODB_RESUMES_TABLE].insert_one(data)
-    return db[MONGODB_RESUMES_TABLE].find_one({"_id": uploaded_resume_data.inserted_id})
+    return uploaded_resume_data.inserted_id
 
 @app.get(USER_UPLOADS_BASE_URL + '/parsed-user-data')
 async def get_parsed_user_data():
     currentResumes = [currentEntry for currentEntry in db[MONGODB_RESUMES_TABLE].find()]
     del currentResumes[0]["_id"]
     return currentResumes[0]
+
+@app.get(USER_UPLOADS_BASE_URL + '/jobs-suggestions/{upload_id}')
+async def job_suggestions(request: Request):
+    print(request.path_params)
+    #jobs = linkedIn.search_jobs(keywords=['C++'], limit=2)
+    #print(jobs)
+    return linkedIn.get_company('30217634')
