@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from constants import *
 from models.user_data import GenericUserFormData
 from pymongo import MongoClient
-from linkedin_api import Linkedin
+from helpers.linkedIn import get_jobs_suggestion
 
 MONGODB_URL = os.environ['DB_URL']
 MONGODB_DATABASE_NAME = os.environ['MONGODB_DATABASE_NAME']
@@ -18,8 +18,6 @@ pydantic.json.ENCODERS_BY_TYPE[ObjectId]=str
 dbClient = MongoClient(MONGODB_URL)
 db = dbClient[MONGODB_DATABASE_NAME]
 app = FastAPI()
-
-linkedIn = Linkedin(os.environ['LINKEDIN_EMAIL'], os.environ['LINKEDIN_PASSWORD'])
 
 app.add_middleware(
     CORSMiddleware,
@@ -47,6 +45,10 @@ async def get_parsed_user_data():
 @app.get(USER_UPLOADS_BASE_URL + '/jobs-suggestions/{upload_id}')
 async def job_suggestions(request: Request):
     print(request.path_params)
+    uploadId =  request.path_params['upload_id']
+    uploadedResume: GenericUserFormData = db[MONGODB_RESUMES_TABLE].find_one({"_id": ObjectId(uploadId)})
+    del uploadedResume["_id"]
+    return get_jobs_suggestion(uploadedResume)
     #jobs = linkedIn.search_jobs(keywords=['C++'], limit=2)
     #print(jobs)
-    return linkedIn.get_company('30217634')
+    #return linkedIn.get_company('30217634')
