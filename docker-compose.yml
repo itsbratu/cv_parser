@@ -9,7 +9,7 @@ services:
     environment:
       DB_URL: mongodb://root:example@mongo:27017/
       MONGODB_DATABASE_NAME: cv_parser
-      MONGODB_RESUMES_TABLE: resumes
+      MONGODB_RESUMES_DATA_TABLE: resumes
       LINKEDIN_EMAIL: itsbratu@outlook.com
       LINKEDIN_PASSWORD: 6rks8tps"A?rGJ~m
   mongo:

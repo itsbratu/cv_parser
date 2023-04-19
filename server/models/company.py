@@ -6,7 +6,7 @@ optional_location = Optional[Location]
 
 class Company:
     name: optional_str
-    desciption: optional_str
+    description: optional_str
     specialities: optional_list_str
     tagLine: optional_str
     phoneNumber: optional_str
@@ -15,7 +15,7 @@ class Company:
     
     def __init__(self, name: optional_str, description: optional_str, specialities: optional_list_str, tagLine: optional_str, phoneNumber: optional_str, headquarter: optional_location, companyUrl: optional_str) -> None:
         self.name = name
-        self.desciption = description
+        self.description = description
         self.specialities = specialities
         self.tagLine = tagLine
         self.phoneNumber = phoneNumber
