@@ -1,1 +1,1 @@
-USER_UPLOADS_BASE_URL = '/api-useruploads'
+USER_UPLOADS_BASE_URL = "/api-useruploads"
